@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ master ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: Build with Ant
+        run: ant zip_artifacts
+      - name: Upload artifacts
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event_name == 'release' }}
+        with:
+          files: |
+            out/production/flightplot.jar.zip
+            out/production/flightplot.app.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
